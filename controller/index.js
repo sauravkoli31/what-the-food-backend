@@ -1,10 +1,14 @@
 import express from 'express'
 const router = express.Router()
-import { getRestaurants, getCuisines, getRestaurantBranchLink } from './restaurantController.js'
+import { getRestaurants, getCuisines, getRestaurantBranchLink, getRestaurantsById } from './restaurantController.js'
 
 
 router.post('/getRestaurants', (req, res) => {
     getRestaurants(req,res)
+})
+
+router.post('/getRestaurantsById', (req, res) => {
+    getRestaurantsById(req,res)
 })
 
 router.post('/getCuisines', (req, res) => {

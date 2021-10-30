@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 export function getCuisines(req, res) {
   const latitude = req.body.latitude;
   const longitude = req.body.longitude;
-  const areaIdLink = process.env.AREA_ID_LINK
+  const areaIdLink = process.env.AREA_ID_LINK;
 
   const url = `${areaIdLink}/${latitude}/${longitude}/4`;
   fetch(url)
@@ -77,30 +77,54 @@ export function getRestaurants(req, res) {
       $project: {
         _id: 0,
         id: 1,
-        logo: 1,
-        name: 1,
-        heroImage: 1,
-        mostSellingItems: {
-          name: 1,
-          image: 1
-        },
-        areas: {
-          id: 1,
-          name: 1,
-          cityId: 1
-        },
       },
     },
   ];
   restaurantsModel.aggregate(aggregationPipeline, (error, data) => {
-    if (data === null) {
+    if (data === null || data.length < 1 || error) {
       res.status(400).send({
         response: null,
       });
     }
     if (data) {
       res.send({
-        response: data,
+        response: data.map((ids) => ids.id),
+      });
+    }
+  });
+}
+
+export function getRestaurantsById(req, res) {
+  const id = Number(req.body.id);
+  const aggregationPipeline = [
+    {
+      $match: {
+        id: id,
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        id: 1,
+        logo: 1,
+        name: 1,
+        heroImage: 1,
+        mostSellingItems: {
+          name: 1,
+          image: 1,
+        },
+      },
+    },
+  ];
+  restaurantsModel.aggregate(aggregationPipeline, (error, data) => {
+    if (data === null || data.length < 1 || error) {
+      res.status(400).send({
+        response: null,
+      });
+    }
+    if (data.length > 0) {
+      res.send({
+        response: data[0],
       });
     }
   });
@@ -110,16 +134,15 @@ export function getRestaurantBranchLink(req, res) {
   let latitude = req.body.latitude;
   let longitude = req.body.longitude;
   let restaurantId = req.body.restaurantId;
-  let valuesPresent = latitude && longitude && restaurantId
-  if (valuesPresent){
-
+  let valuesPresent = latitude && longitude && restaurantId;
+  if (valuesPresent) {
     let data = {
       CountryId: 4,
       latitude: latitude,
       longitude: longitude,
       restaurantId: restaurantId,
     };
-    let url = process.env.SLUG_AND_AREA_LINK
+    let url = process.env.SLUG_AND_AREA_LINK;
     let options = {
       method: "POST",
       body: JSON.stringify(data),
@@ -130,22 +153,26 @@ export function getRestaurantBranchLink(req, res) {
     fetch(url, options)
       .then(async (data) => data.json())
       .then((data, err) => {
-        if (data){
+        if (data) {
           let branchId = data?.result?.branchInfo?.branchId;
           let slug = data?.result?.address?.sl;
           let areaId = data?.result?.address?.aid;
-          let finalLink = process.env.FINAL_LINK
+          let finalLink = process.env.FINAL_LINK;
 
-          if (branchId < 1) res.send({"response":null})
-          let link = `${finalLink}/${branchId}/${slug}?aid=${areaId}`;
-          res.send({"response":link});
+          if (branchId < 1) {
+            res.send({ response: null });
+          }
+          if (branchId > 1) {
+            let link = `${finalLink}/${branchId}/${slug}?aid=${areaId}`;
+            res.send({ response: link });
+          }
         }
-        if (err){
-          res.status(400).send("Error occured")
+        if (err) {
+          res.status(400).send("Error occured");
         }
       });
   }
-  if (!valuesPresent){
-    res.status(400).send("Some Data missing")
+  if (!valuesPresent) {
+    res.status(400).send("Some Data missing");
   }
 }
