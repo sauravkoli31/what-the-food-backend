@@ -21,7 +21,7 @@ const connectDB = async () => {
 connectDB()
 
 const app = express()
-const port = process.env.ENVIRONMENT === 'PRODUCTION' ? 80 : 4000
+const port = process.env.PORT || 4000
 
 app.use(express.urlencoded({
   extended: true
