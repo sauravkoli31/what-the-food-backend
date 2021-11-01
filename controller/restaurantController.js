@@ -55,6 +55,11 @@ export function getCuisines(req, res) {
 export function getRestaurants(req, res) {
   const id = Number(req.body.id);
   const chosenCuisines = req.body.chosenCuisines.split(",");
+  if (id === null || chosenCuisines === null){
+    res.status(400).send({
+      response: null,
+    });
+  }
   const aggregationPipeline = [
     {
       $match: {
@@ -113,6 +118,7 @@ export function getRestaurantsById(req, res) {
           name: 1,
           image: 1,
         },
+        description: 1
       },
     },
   ];
