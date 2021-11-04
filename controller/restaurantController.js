@@ -215,7 +215,7 @@ export function getRestaurantData(req, res) {
         if (mostSellingItems.length > 1){
           mostSellingItems.forEach((item) => {
             let tempData = menuData.filter(food => food.id === Number(item))[0]
-            let {id, name, price} = tempData
+            let {id, name, price} = tempData || [null, null, null]
             mostSellingItemsPrices.push({id, name, price})
           })
         }
