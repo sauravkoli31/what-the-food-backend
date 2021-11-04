@@ -1,5 +1,6 @@
 import restaurantsModel from "../models/restaurants.js";
 import fetch from "node-fetch";
+import { parse } from "node-html-parser";
 
 export function getCuisines(req, res) {
   const latitude = req.body.latitude;
@@ -55,7 +56,7 @@ export function getCuisines(req, res) {
 export function getRestaurants(req, res) {
   const id = Number(req.body.id);
   const chosenCuisines = req.body.chosenCuisines.split(",");
-  if (id === null || chosenCuisines === null){
+  if (id === null || chosenCuisines === null) {
     res.status(400).send({
       response: null,
     });
@@ -115,10 +116,11 @@ export function getRestaurantsById(req, res) {
         name: 1,
         heroImage: 1,
         mostSellingItems: {
+          id: 1,
           name: 1,
           image: 1,
         },
-        description: 1
+        description: 1,
       },
     },
   ];
@@ -180,5 +182,54 @@ export function getRestaurantBranchLink(req, res) {
   }
   if (!valuesPresent) {
     res.status(400).send("Some Data missing");
+  }
+}
+
+export function getRestaurantData(req, res) {
+  let url = req.body.url;
+  let mostSellingItems = req.body.mSI?.split(',')
+  if (url === "null") {
+    res.status(200).send({});
+  }
+  if (url && url !== "null") {
+    fetch(url)
+      .then((response) => response.text())
+      .then((resp) => {
+        let slurpData = parse(resp);
+        let scriptTag = slurpData.querySelector("#__NEXT_DATA__");
+        let scriptTagData = JSON.parse(scriptTag.firstChild.rawText);
+        let content = scriptTagData.props.pageProps;
+        let mostSellingItemsPrices = []
+        let restaurantData = content?.gtmEventData?.restaurant || null;
+        let {
+          id,
+          rate,
+          deliveryFee,
+          minimumOrderAmount,
+          deliverySchedule,
+          avgDeliveryTime,
+          status,
+        } = restaurantData;
+
+        let menuData = content?.initialMenuState?.menuData?.items
+        if (mostSellingItems.length > 1){
+          mostSellingItems.forEach((item) => {
+            let tempData = menuData.filter(food => food.id === Number(item))[0]
+            let {id, name, price} = tempData
+            mostSellingItemsPrices.push({id, name, price})
+          })
+        }
+
+        res.send({
+          id,
+          rate,
+          deliveryFee,
+          minimumOrderAmount,
+          deliverySchedule,
+          avgDeliveryTime,
+          status,
+          mostSellingItemsPrices
+        });
+      });
   }
 }

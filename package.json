@@ -12,11 +12,12 @@
     "mongoose": "^6.0.12",
     "morgan": "^1.10.0",
     "node-fetch": "^3.0.0",
+    "node-html-parser": "^5.1.0",
     "nodemon": "^2.0.14"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
