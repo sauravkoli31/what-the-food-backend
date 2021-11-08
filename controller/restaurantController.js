@@ -20,7 +20,6 @@ export function getCuisines(req, res) {
                 id: id,
               },
             },
-            status: "OPEN",
           },
         },
         {
@@ -69,7 +68,6 @@ export function getRestaurants(req, res) {
             id: id,
           },
         },
-        status: "OPEN",
         cuisines: {
           $elemMatch: {
             name: {
